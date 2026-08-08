@@ -429,6 +429,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6095451414374448339, guid: 8048e4e9f659ed946a7dd4b67b8e8642, type: 3}
   m_PrefabInstance: {fileID: 218404312}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &242683608
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 242683609}
+  m_Layer: 0
+  m_Name: TerrainHolder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &242683609
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 242683608}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &267265726
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3204,6 +3235,54 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7235273998878658191, guid: af20760f9f109bc49b6dae1c602c3608, type: 3}
   m_PrefabInstance: {fileID: 1789320099}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1799008430
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1799008432}
+  - component: {fileID: 1799008431}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1799008431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1799008430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dd700e57c930d043a89aa60a2746785, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  terrainHolder: {fileID: 242683609}
+  grassPrefab: {fileID: -4568503373051896214, guid: 8048e4e9f659ed946a7dd4b67b8e8642, type: 3}
+  roadPrefab: {fileID: -8925648281010328381, guid: 57c8926fa24559141ad647cf12d6db63, type: 3}
+  spawnDistance: 20
+--- !u!4 &1799008432
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1799008430}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1861378943
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3740,3 +3819,5 @@ SceneRoots:
   - {fileID: 1703163525}
   - {fileID: 1158110300}
   - {fileID: 1164666953}
+  - {fileID: 242683609}
+  - {fileID: 1799008432}

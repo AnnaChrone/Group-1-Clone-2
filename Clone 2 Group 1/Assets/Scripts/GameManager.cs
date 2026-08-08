@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Terrain Objects")]
     [SerializeField] private Grass grassPrefab;
+    [SerializeField] private Road roadPrefab;
 
     [Header("Game Parameters")]
     [SerializeField] private int spawnDistance = 20;
@@ -41,8 +42,22 @@ public class GameManager : MonoBehaviour
 
     private void SpawnObstacle()
     {
-        Grass grass = Instantiate(grassPrefab, terrainHolder);
-        obstacles.Add((0.2f, grass.Init(spawnLocation)));
+        //Spawns more roads the further u get
+        float roadProbability = Mathf.Lerp(0.5f, 0.9f, spawnLocation / 250f);
+
+        if (Random.value < roadProbability)
+        {
+            Road road = Instantiate(roadPrefab, terrainHolder);
+            obstacles.Add((0.1f, road.Init(spawnLocation)));
+        }
+        else
+        {
+
+            Grass grass = Instantiate(grassPrefab, terrainHolder);
+            obstacles.Add((0.2f, grass.Init(spawnLocation)));
+        }
+
+
 
         spawnLocation++;
     }

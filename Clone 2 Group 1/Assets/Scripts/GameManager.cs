@@ -1,10 +1,12 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
     [Header("Game objects")]
+    [SerializeField] private Transform Player;
     [SerializeField] private Transform terrainHolder;
 
     [Header("Terrain Objects")]
@@ -14,7 +16,7 @@ public class GameManager : MonoBehaviour
     [Header("Game Parameters")]
     [SerializeField] private int spawnDistance = 20;
 
-
+    private Vector2Int playerPos;
     private int spawnLocation;
     private List<(float terrainHeight, HashSet<int> locations)> obstacles = new();
 
@@ -23,9 +25,17 @@ public class GameManager : MonoBehaviour
         NewLevel();
     }
 
+    private void Update()
+    {
+        while (obstacles.Count < (playerPos.y + spawnDistance))
+            {
+            SpawnObstacle();
+        }
+    }
+
     private void NewLevel()
     {
-        
+        playerPos = new Vector2Int(0,-1);
         //Reset Terrain
         obstacles.Clear();
         foreach (Transform child in terrainHolder)

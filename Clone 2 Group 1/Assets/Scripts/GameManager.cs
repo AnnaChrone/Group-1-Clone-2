@@ -84,7 +84,8 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        while (obstacles.Count < (playerPos.y + spawnDistance))
+
+        while (obstacles.Count < (characterPos.y + spawnDistance))
             {
             SpawnObstacle();
         }
@@ -159,7 +160,6 @@ public class GameManager : MonoBehaviour
             Vector3 newPos = Vector3.Lerp(startPos, endPos, percent);
             newPos.y = yHeight + (0.5f * Mathf.Sin(Mathf.PI * percent));
             character.position = newPos;
-
             elapsedTime += Time.deltaTime;
 
             yield return null;

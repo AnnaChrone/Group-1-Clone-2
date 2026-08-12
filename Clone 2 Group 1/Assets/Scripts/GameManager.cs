@@ -16,6 +16,9 @@ public class GameManager : MonoBehaviour
     [Header("Terrain Objects")]
     [SerializeField] private Grass grassPrefab;
     [SerializeField] private Road roadPrefab;
+    [SerializeField] private Train trainPrefab;
+    [SerializeField] private Log LogPrefab;
+
 
     [Header("Game Parameters")]
     [SerializeField] private int spawnDistance = 20;
@@ -123,22 +126,32 @@ public class GameManager : MonoBehaviour
 
     private void SpawnObstacle()
     {
-        //Spawns more roads the further u get
-        float roadProbability = Mathf.Lerp(0.5f, 0.9f, spawnLocation / 250f);
+        float randomValue = Random.value;
 
-        if (Random.value < roadProbability)
+        if (randomValue < 0.1f)
         {
+            // 10% Train
+            Train train = Instantiate(trainPrefab, terrainHolder);
+            obstacles.Add((0.1f, train.Init(spawnLocation)));
+        }
+        else if (randomValue < 0.25f)
+        {
+            // 15% Log
+            Log log = Instantiate(LogPrefab, terrainHolder);
+            obstacles.Add((0.1f, log.Init(spawnLocation)));
+        }
+        else if (randomValue < 0.5f)
+        {
+            // 25% Road
             Road road = Instantiate(roadPrefab, terrainHolder);
             obstacles.Add((0.1f, road.Init(spawnLocation)));
         }
         else
         {
-
+            // 50% Grass
             Grass grass = Instantiate(grassPrefab, terrainHolder);
             obstacles.Add((0.2f, grass.Init(spawnLocation)));
         }
-
-
 
         spawnLocation++;
     }

@@ -3871,6 +3871,7 @@ MonoBehaviour:
   terrainHolder: {fileID: 411753446}
   grassPrefab: {fileID: -4568503373051896214, guid: 8048e4e9f659ed946a7dd4b67b8e8642, type: 3}
   roadPrefab: {fileID: -8925648281010328381, guid: 57c8926fa24559141ad647cf12d6db63, type: 3}
+  trainPrefab: {fileID: 3119408865319647123, guid: eb8fe536528e53f49b2dbc925f11b703, type: 3}
   spawnDistance: 20
   moveDuration: 0.2
 --- !u!4 &1913122361

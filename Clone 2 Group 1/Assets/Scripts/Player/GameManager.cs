@@ -28,6 +28,29 @@ public class GameManager : MonoBehaviour
     private int spawnLocation;
     private List<(float terrainHeight, HashSet<int> locations)> obstacles = new();
 
+    //Chunk system logic
+    private enum LaneType
+    {
+        Grass,
+        Road,
+        River,
+        Train
+    }
+
+    private class LaneChunk
+    {
+        public List<LaneType> Lanes = new List<LaneType>();
+    }
+
+    private Queue<LaneChunk> chunkQueue = new Queue<LaneChunk>();
+    //CHecks to ensure not too many consecutive lanes occur
+    private int consecutiveRoads = 0;
+    private int consecutiveGrass = 0;
+    private int consecutiveRivers = 0;
+    private int consecutiveTrains = 0;
+    private int lanesUntilSafeZone = 0;
+    private bool inSafeZone = false;
+
 
     enum GameState
     {
@@ -93,15 +116,6 @@ public class GameManager : MonoBehaviour
                 {
                     characterPos = destination;
                     StartCoroutine(MoveCharacter());
-                }
-            }
-            if (moveDirection != Vector2Int.zero)
-            {
-                Vector2Int destination = characterPos + moveDirection;
-                if (InStartArea(destination) || ((destination.y >= 0) && !obstacles[destination.y].locations.Contains(destination.x)))
-                {
-                    characterPos = destination;
-                    StartCoroutine(MoveCharacter());
 
                     // Check if the new position is dangerous
                     CheckForDeathAtPosition(destination);
@@ -134,6 +148,8 @@ public class GameManager : MonoBehaviour
         playerPos = new Vector2Int(0,-1);
         //Reset Terrain
         obstacles.Clear();
+        chunkQueue.Clear();
+        ResetConsecutiveCounters();
         foreach (Transform child in terrainHolder)
         {
             Destroy(child.gameObject);
@@ -146,37 +162,290 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    //PROCEDURAL GENERATION FUNCTIONS
+    private void ResetConsecutiveCounters()
+    {
+        consecutiveRoads = 0;
+        consecutiveGrass = 0;
+        consecutiveRivers = 0;
+        consecutiveTrains = 0;
+        lanesUntilSafeZone = 0;
+        inSafeZone = false;
+    }
+
+
     private void SpawnObstacle()
     {
-        float randomValue = Random.value;
+        LaneType selectedType = DetermineLaneType();
 
-        if (randomValue < 0.1f)
+        // Create the actual lane based on type
+        switch (selectedType)
         {
-            // 10% Train
-            Train train = Instantiate(trainPrefab, terrainHolder);
-            obstacles.Add((0.1f, train.Init(spawnLocation)));
+            case LaneType.Train:
+                Train train = Instantiate(trainPrefab, terrainHolder);
+                obstacles.Add((0.1f, train.Init(spawnLocation)));
+                consecutiveTrains++;
+                consecutiveRoads = 0;
+                consecutiveGrass = 0;
+                consecutiveRivers = 0;
+                break;
+
+            case LaneType.River:
+                Log log = Instantiate(LogPrefab, terrainHolder);
+                obstacles.Add((0.1f, log.Init(spawnLocation)));
+                consecutiveRivers++;
+                consecutiveRoads = 0;
+                consecutiveGrass = 0;
+                consecutiveTrains = 0;
+                break;
+
+            case LaneType.Road:
+                Road road = Instantiate(roadPrefab, terrainHolder);
+                obstacles.Add((0.1f, road.Init(spawnLocation)));
+                consecutiveRoads++;
+                consecutiveGrass = 0;
+                consecutiveRivers = 0;
+                consecutiveTrains = 0;
+                break;
+
+            case LaneType.Grass:
+            default:
+                Grass grass = Instantiate(grassPrefab, terrainHolder);
+                obstacles.Add((0.2f, grass.Init(spawnLocation)));
+                consecutiveGrass++;
+                consecutiveRoads = 0;
+                consecutiveRivers = 0;
+                consecutiveTrains = 0;
+                break;
         }
-        else if (randomValue < 0.25f)
+
+        // Track safe zones of grass
+        if (selectedType == LaneType.Grass)
         {
-            // 15% Log
-            Log log = Instantiate(LogPrefab, terrainHolder);
-            obstacles.Add((0.1f, log.Init(spawnLocation)));
-        }
-        else if (randomValue < 0.5f)
-        {
-            // 25% Road
-            Road road = Instantiate(roadPrefab, terrainHolder);
-            obstacles.Add((0.1f, road.Init(spawnLocation)));
+            inSafeZone = true;
+            lanesUntilSafeZone = 0;
         }
         else
         {
-            // 50% Grass
-            Grass grass = Instantiate(grassPrefab, terrainHolder);
-            obstacles.Add((0.2f, grass.Init(spawnLocation)));
+            inSafeZone = false;
+            lanesUntilSafeZone++;
         }
 
         spawnLocation++;
     }
+
+    private LaneType DetermineLaneType()
+    {
+        //Pre-generated chunks
+        if (chunkQueue.Count == 0)
+        {
+            GenerateNextChunk();
+        }
+
+        //Use left over chunk lanes if there are
+        if (chunkQueue.Count > 0)
+        {
+            var currentChunk = chunkQueue.Peek();
+            if (currentChunk.Lanes.Count > 0)
+            {
+                LaneType type = currentChunk.Lanes[0];
+                currentChunk.Lanes.RemoveAt(0);
+
+                // If chunk is empty, remove it from the queue
+                if (currentChunk.Lanes.Count == 0)
+                {
+                    chunkQueue.Dequeue();
+                }
+
+                return type;
+            }
+        }
+
+        // Fallback to constraint-based generation - if the constraints kick in
+        return GenerateConstrainedLane();
+    }
+
+    private void GenerateNextChunk()
+    {
+        LaneChunk chunk = new LaneChunk();
+        int chunkSize = Random.Range(5, 11); // 5-10 lanes per chunk - ensures distance into game
+
+        //Decides chunk theme
+        float themeRoll = Random.value;
+
+        // Build the chunk with safe zones and hazard grouping alike
+        if (inSafeZone && lanesUntilSafeZone > 2)
+        {
+            BuildHazardChunk(chunk, chunkSize);
+        }
+        else if (!inSafeZone && lanesUntilSafeZone > 4)
+        {
+            //forces safe zone if too many hazards
+            BuildSafeChunk(chunk, chunkSize);
+        }
+        else
+        {
+            // Mixed chunk
+            BuildMixedChunk(chunk, chunkSize);
+        }
+
+        chunkQueue.Enqueue(chunk);
+    }
+
+    private void BuildSafeChunk(LaneChunk chunk, int size)
+    {
+        // 2-4 grass lanes for breathing room of player
+        int grassCount = Random.Range(2, Mathf.Min(5, size));
+        for (int i = 0; i < grassCount; i++)
+        {
+            chunk.Lanes.Add(LaneType.Grass);
+        }
+
+        int hazardCount = Mathf.Min(size - grassCount, 2);
+        for (int i = 0; i < hazardCount; i++)
+        {
+            chunk.Lanes.Add(GetRandomHazardType());
+        }
+    }
+
+    private void BuildHazardChunk(LaneChunk chunk, int size)
+    {
+        // Build a hazard-dense chunk
+        int remaining = size;
+
+        // Always starts with 1 grass for initial breathing
+        if (remaining > 0)
+        {
+            chunk.Lanes.Add(LaneType.Grass);
+            remaining--;
+        }
+
+        // Add 2-4 hazard lanes
+        int hazardCount = Mathf.Min(Random.Range(2, 5), remaining);
+        for (int i = 0; i < hazardCount; i++)
+        {
+            chunk.Lanes.Add(GetRandomHazardType());
+            remaining--;
+        }
+
+        // End with 1-2 grass for recovery time
+        int endingGrass = Mathf.Min(Random.Range(1, 3), remaining);
+        for (int i = 0; i < endingGrass; i++)
+        {
+            chunk.Lanes.Add(LaneType.Grass);
+            remaining--;
+        }
+
+        // Fill any remaining with grass lanes
+        while (remaining > 0)
+        {
+            chunk.Lanes.Add(LaneType.Grass);
+            remaining--;
+        }
+    }
+
+    private void BuildMixedChunk(LaneChunk chunk, int size)
+    {
+        // Create a balanced mix
+        int remaining = size;
+
+        // Start with 1-2 grass
+        int startGrass = Random.Range(1, 3);
+        for (int i = 0; i < Mathf.Min(startGrass, remaining); i++)
+        {
+            chunk.Lanes.Add(LaneType.Grass);
+            remaining--;
+        }
+
+        // Alternate hazards and grass
+        bool hazardNext = true;
+        while (remaining > 0)
+        {
+            if (hazardNext)
+            {
+                // Add 1-2 hazards
+                int hazardCount = Random.Range(1, 3);
+                for (int i = 0; i < Mathf.Min(hazardCount, remaining); i++)
+                {
+                    chunk.Lanes.Add(GetRandomHazardType());
+                    remaining--;
+                }
+            }
+            else
+            {
+                // Add 1-2 grass
+                int grassCount = Random.Range(1, 3);
+                for (int i = 0; i < Mathf.Min(grassCount, remaining); i++)
+                {
+                    chunk.Lanes.Add(LaneType.Grass);
+                    remaining--;
+                }
+            }
+            hazardNext = !hazardNext;
+        }
+    }
+
+    private LaneType GenerateConstrainedLane()
+    {
+        // Checks if we're exceeding max consecutive lanes of any type
+
+        if (consecutiveRoads >= 3 || consecutiveRivers >= 3 || consecutiveTrains >= 1)
+        {
+            return LaneType.Grass;
+        }
+
+        // Force a hazard if we've had too much grass
+        if (consecutiveGrass >= 4)
+        {
+            return GetRandomHazardType();
+        }
+
+        // Normal random selection with weighted probabilities
+        float randomValue = Random.value;
+
+        // Adjust probabilities based on recent history of lanes
+        float grassWeight = 0.5f;
+        float roadWeight = 0.25f;
+        float riverWeight = 0.2f;
+        float trainWeight = 0.05f;
+
+        // Reduce chance of more hazards if we've had several in a row
+        if (consecutiveRoads >= 2) roadWeight *= 0.5f;
+        if (consecutiveRivers >= 2) riverWeight *= 0.5f;
+        if (consecutiveTrains >= 1) trainWeight = 0f;
+
+        // Increase chance of grass if too many hazrds
+        if (consecutiveRoads >= 2 || consecutiveRivers >= 2) grassWeight *= 1.5f;
+
+        // Normalize weights of percentages
+        float totalWeight = grassWeight + roadWeight + riverWeight + trainWeight;
+        float normalizedRandom = randomValue * totalWeight;
+
+        if (normalizedRandom < grassWeight)
+            return LaneType.Grass;
+        else if (normalizedRandom < grassWeight + roadWeight)
+            return LaneType.Road;
+        else if (normalizedRandom < grassWeight + roadWeight + riverWeight)
+            return LaneType.River;
+        else
+            return LaneType.Train;
+    }
+
+    private LaneType GetRandomHazardType()
+    {
+        // Randomly select a hazard type (now weighted)
+        float randomValue = Random.value;
+
+        if (randomValue < 0.6f)
+            return LaneType.Road; 
+        else if (randomValue < 0.85f)
+            return LaneType.River;
+        else
+            return LaneType.Train; // Rare
+    }
+
+
+
 
     private IEnumerator MoveCharacter()//new
     {

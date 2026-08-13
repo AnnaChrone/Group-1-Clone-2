@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 8849111593964174196}
   - component: {fileID: 3532424151665890394}
   - component: {fileID: 7829748175869497665}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Log_prefab
   m_TagString: Ridable
   m_Icon: {fileID: 0}

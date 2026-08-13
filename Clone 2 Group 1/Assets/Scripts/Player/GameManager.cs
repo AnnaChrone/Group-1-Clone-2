@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 public class GameManager : MonoBehaviour
 {
     [Header("Game objects")]
-    [SerializeField] private Transform character;//new
+    [SerializeField] private Transform character;
     [SerializeField] private Transform Player;
     [SerializeField] private Transform terrainHolder;
 
@@ -22,7 +22,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Game Parameters")]
     [SerializeField] private int spawnDistance = 20;
-    [SerializeField] private float moveDuration = 0.2f;//new
+    [SerializeField] private float moveDuration = 0.2f;
 
     private Vector2Int playerPos;
     private int spawnLocation;
@@ -36,13 +36,19 @@ public class GameManager : MonoBehaviour
         Dead
     }
     private GameState gameState;
-    private Vector2Int characterPos;//new
+    private Vector2Int characterPos;
 
     private void Awake()
     {
-        NewLevel();
+        // Hey, Don't call NewLevel here anymore - we'll call it when game starts
+        // NewLevel(); 
     }
 
+    public void StartGameLevel()
+    {
+        NewLevel();
+        SetGameActive(true);
+    }
     private bool InStartArea(Vector2Int location)
     {
         if((location.y > -5) && (location.y < 0) && (location.x > -6) && (location.x < 6))
@@ -53,6 +59,9 @@ public class GameManager : MonoBehaviour
     }
     private void Update()
     {
+        if (gameState == GameState.Dead)
+            return;
+
         if (gameState == GameState.Ready)
         {
             Vector2Int moveDirection = Vector2Int.zero;
@@ -86,7 +95,20 @@ public class GameManager : MonoBehaviour
                     StartCoroutine(MoveCharacter());
                 }
             }
+            if (moveDirection != Vector2Int.zero)
+            {
+                Vector2Int destination = characterPos + moveDirection;
+                if (InStartArea(destination) || ((destination.y >= 0) && !obstacles[destination.y].locations.Contains(destination.x)))
+                {
+                    characterPos = destination;
+                    StartCoroutine(MoveCharacter());
+
+                    // Check if the new position is dangerous
+                    CheckForDeathAtPosition(destination);
+                }
+            }
         }
+        
 
         while (obstacles.Count < (characterPos.y + spawnDistance))
             {
@@ -106,7 +128,7 @@ public class GameManager : MonoBehaviour
         gameState = GameState.Ready;
 
         characterPos = new Vector2Int(0, -1);
-        character.position = new Vector3(0, 0.2f, -1);//new 
+        character.position = new Vector3(0, 0.2f, -1);
 
 
         playerPos = new Vector2Int(0,-1);
@@ -184,5 +206,39 @@ public class GameManager : MonoBehaviour
         {
             gameState = GameState.Ready;
         }
+    }
+    public void SetGameActive(bool active)
+    {
+        if (active)
+        {
+            gameState = GameState.Ready;
+        }
+        else
+        {
+            gameState = GameState.Dead; // Prevents movement
+        }
+    }
+    public bool IsPositionSafe(Vector2Int position)
+    {
+        if (InStartArea(position))
+            return true;
+
+        // Check if position is valid and not blocked by obstacles
+        if (position.y >= 0 && position.y < obstacles.Count)
+        {
+            return !obstacles[position.y].locations.Contains(position.x);
+        }
+
+        return false;
+    }
+
+    public Vector2Int GetCharacterPosition()
+    {
+        return characterPos;
+    }
+
+    private void CheckForDeathAtPosition(Vector2Int position)
+    {
+        //PlayerDeathHandler handle collisions
     }
 }

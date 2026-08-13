@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 8123141589855418925}
   - component: {fileID: 2312848005163038182}
   - component: {fileID: -3699245164230394759}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: car
   m_TagString: Hazard
   m_Icon: {fileID: 0}
@@ -157,7 +157,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3

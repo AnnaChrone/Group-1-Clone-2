@@ -122,6 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6095451414374448339}
   - component: {fileID: -5546316664479740090}
+  - component: {fileID: 9002999615968017892}
   m_Layer: 0
   m_Name: Log
   m_TagString: Untagged
@@ -159,6 +160,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05d46501021a13b479d9f3ac7d612436, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &9002999615968017892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538050981351483821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc9f34245c916a468069c30abe5d86e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LaneSpawner
+  spawnPrefabs:
+  - {fileID: 1336746813012487655, guid: 1d1c682f5ab520542b40de1c6f77563f, type: 3}
+  minSpawnInterval: 2
+  maxSpawnInterval: 4
+  speed: 4
+  moveRight: 1
+  spawnXOffset: 20
 --- !u!1 &4087592367913385821
 GameObject:
   m_ObjectHideFlags: 0

@@ -122,6 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6095451414374448339}
   - component: {fileID: -8925648281010328381}
+  - component: {fileID: 1814628935610647365}
   m_Layer: 0
   m_Name: Road
   m_TagString: Untagged
@@ -159,6 +160,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6baee22c614bf39468a30dd4354fabc8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Road
+--- !u!114 &1814628935610647365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3538050981351483821}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbc9f34245c916a468069c30abe5d86e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LaneSpawner
+  spawnPrefabs:
+  - {fileID: 4862632763449242743, guid: 9d80b852b85b70745a04a2a99dd26c3c, type: 3}
+  minSpawnInterval: 1.5
+  maxSpawnInterval: 3.5
+  speed: 6
+  moveRight: 1
+  spawnXOffset: 20
 --- !u!1 &4087592367913385821
 GameObject:
   m_ObjectHideFlags: 0

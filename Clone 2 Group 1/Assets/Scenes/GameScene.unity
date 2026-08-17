@@ -3872,7 +3872,7 @@ MonoBehaviour:
   roadPrefab: {fileID: -8925648281010328381, guid: 57c8926fa24559141ad647cf12d6db63, type: 3}
   trainPrefab: {fileID: 3119408865319647123, guid: eb8fe536528e53f49b2dbc925f11b703, type: 3}
   LogPrefab: {fileID: -5546316664479740090, guid: 90e5071ba62f5134e83f587a970c7244, type: 3}
-  spawnDistance: 20
+  spawnDistance: 60
   moveDuration: 0.2
 --- !u!4 &1913122361
 Transform:

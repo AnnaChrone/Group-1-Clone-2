@@ -173,7 +173,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LaneSpawner
   spawnPrefabs:
-  - {fileID: 1336746813012487655, guid: 1d1c682f5ab520542b40de1c6f77563f, type: 3}
+  - {fileID: 5879095754530979384, guid: 4942ee7372de2e64781fbe9fd097b6d8, type: 3}
   minSpawnInterval: 2
   maxSpawnInterval: 4
   speed: 4

@@ -17,8 +17,6 @@ public class HomeScreenManager : MonoBehaviour
     {
         homeScreenPanel.SetActive(true);
         gameManager.SetGameActive(false);
-
-        // Setup camera for home screen
         if (cameraController != null)
         {
             cameraController.SetupHomeScreenView();
@@ -42,6 +40,8 @@ public class HomeScreenManager : MonoBehaviour
     {
         gameStarted = true;
         homeScreenPanel.SetActive(false);
+
         gameManager.StartGameLevel();
+
     }
 }

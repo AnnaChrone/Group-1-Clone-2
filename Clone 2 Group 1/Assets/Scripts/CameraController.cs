@@ -11,7 +11,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Vector3 cameraRotation = new Vector3(45f, 45f, 0f);
 
     [Header("Camera Follow Settings")]
-    [SerializeField] private float maxZDistance = -5f;  
+    [SerializeField] private float maxZDistance = -5f;
 
     [Header("References")]
     [SerializeField] private PlayerDeathManager deathManager;
@@ -36,37 +36,69 @@ public class CameraController : MonoBehaviour
         }
 
         fixedRotation = Quaternion.Euler(cameraRotation);
+
+        // Start on home screen view
         SetupHomeScreenView();
     }
 
     private void Update()
     {
-        if (!isGameStarted)
-            return;
-
         if (playerTarget == null)
             return;
+
+        // Check if game is active from GameManager
+        if (gameManager != null && gameManager.IsGameActive())
+        {
+            isGameStarted = true;
+        }
+
+        // Only move camera if game has started
+        if (isGameStarted)
+        {
+            UpdateGameplayCamera();
+        }
+        else
+        {
+            // Keep camera at home screen position - no movement
+            // But still look at the target if needed
+            if (homeScreenLookTarget != null)
+            {
+                // Camera stays fixed, no movement
+            }
+        }
+    }
+
+    private void UpdateGameplayCamera()
+    {
+        // ALWAYS move camera forward
         currentZ += forwardSpeed * Time.deltaTime;
 
+        // Get the player's current Z
         float playerZ = playerTarget.position.z;
+
+        // Calculate target camera Z: player position + offset (which is -5)
         float targetZ = playerZ + maxZDistance;
 
+        // Camera should always try to be at targetZ, but also keep moving forward
         float finalZ = Mathf.Max(currentZ, targetZ);
 
+        // Calculate camera position
         Vector3 targetPos = new Vector3(
             playerTarget.position.x + cameraOffset.x,
             cameraOffset.y,
             finalZ
         );
 
+        // Move camera smoothly
         transform.position = Vector3.Lerp(transform.position, targetPos, Time.deltaTime * 8f);
 
+        // Keep fixed rotation
         transform.rotation = fixedRotation;
 
+        // Check if player is too far behind (out of view)
         if (deathManager != null)
         {
             float actualDistanceBehind = transform.position.z - playerTarget.position.z;
-            // If player is more than 7 steps behind, kill them
             if (actualDistanceBehind > 7f)
             {
                 deathManager.TriggerDeath();
@@ -128,5 +160,10 @@ public class CameraController : MonoBehaviour
             transform.rotation = fixedRotation;
             currentZ = targetPos.z;
         }
+    }
+
+    public void StopCamera()
+    {
+        isGameStarted = false;
     }
 }

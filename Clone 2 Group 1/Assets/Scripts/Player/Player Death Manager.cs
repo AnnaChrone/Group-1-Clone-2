@@ -46,16 +46,38 @@ public class PlayerDeathManager : MonoBehaviour
     {
         if (isDead || isSinking) return;
 
+        // Check for ridable object (log)
         if (other.GetComponent<Ridable>() != null)
         {
             isOnRidable = true;
             return;
         }
+
+        // Check for obstacle death
         if (other.gameObject.layer == LayerMask.NameToLayer(deathLayerName))
         {
             Die();
         }
 
+        // Check for water/river death - ONLY if NOT on a ridable
+        if (other.gameObject.layer == LayerMask.NameToLayer(waterLayerName) && !isOnRidable)
+        {
+            StartCoroutine(SinkAndDie());
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (isDead || isSinking) return;
+
+        // Keep checking if we're on a ridable
+        if (other.GetComponent<Ridable>() != null)
+        {
+            isOnRidable = true;
+            return;
+        }
+
+        // Check for water/river death - ONLY if NOT on a ridable
         if (other.gameObject.layer == LayerMask.NameToLayer(waterLayerName) && !isOnRidable)
         {
             StartCoroutine(SinkAndDie());
@@ -64,6 +86,7 @@ public class PlayerDeathManager : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        // Check if we're still on the log
         if (other.GetComponent<Ridable>() != null)
         {
             StartCoroutine(DelayedRidableCheck());
@@ -72,9 +95,11 @@ public class PlayerDeathManager : MonoBehaviour
 
     private IEnumerator DelayedRidableCheck()
     {
-        yield return null; 
+        yield return null; // Wait one frame
 
         isOnRidable = false;
+
+        // Check all colliders currently touching the player
         Collider[] colliders = Physics.OverlapSphere(playerCharacter.position, 0.5f);
         foreach (Collider col in colliders)
         {
@@ -90,6 +115,7 @@ public class PlayerDeathManager : MonoBehaviour
     {
         if (isDead || isSinking) return;
 
+        // Check for ridable object (log)
         if (collision.gameObject.GetComponent<Ridable>() != null)
         {
             isOnRidable = true;
@@ -99,6 +125,24 @@ public class PlayerDeathManager : MonoBehaviour
         if (collision.gameObject.layer == LayerMask.NameToLayer(deathLayerName))
         {
             Die();
+        }
+
+        // Check for water/river death - ONLY if NOT on a ridable
+        if (collision.gameObject.layer == LayerMask.NameToLayer(waterLayerName) && !isOnRidable)
+        {
+            StartCoroutine(SinkAndDie());
+        }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (isDead || isSinking) return;
+
+        // Keep checking if we're on a ridable
+        if (collision.gameObject.GetComponent<Ridable>() != null)
+        {
+            isOnRidable = true;
+            return;
         }
 
         if (collision.gameObject.layer == LayerMask.NameToLayer(waterLayerName) && !isOnRidable)
@@ -157,7 +201,7 @@ public class PlayerDeathManager : MonoBehaviour
             // Move down
             playerCharacter.position = new Vector3(startPos.x, startPos.y - progress * 2f, startPos.z);
 
-            playerCharacter.rotation = Quaternion.Euler( progress * 30f, startRot.eulerAngles.y, 0);
+            playerCharacter.rotation = Quaternion.Euler(progress * 30f, startRot.eulerAngles.y, 0);
 
             yield return null;
         }

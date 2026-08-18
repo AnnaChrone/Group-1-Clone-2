@@ -3923,9 +3923,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   playerTarget: {fileID: 2030385056}
   forwardSpeed: 0.5
-  cameraOffset: {x: 1, y: 4, z: -2}
+  cameraOffset: {x: 2, y: 4, z: -3}
   cameraRotation: {x: 29.35, y: -40, z: 0}
-  maxZDistance: -7
+  maxZDistance: -6
+  startupFollowTime: 2
   deathManager: {fileID: 2030385059}
   gameManager: {fileID: 1913122360}
   homeScreenLookTarget: {fileID: 920680271}

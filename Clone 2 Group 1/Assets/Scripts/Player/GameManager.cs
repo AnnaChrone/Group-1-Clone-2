@@ -85,6 +85,8 @@ public class GameManager : MonoBehaviour
             cameraController.StartGameplayCamera();
         }
     }
+
+
     private bool InStartArea(Vector2Int location)
     {
         if((location.y > -5) && (location.y < 0) && (location.x > -6) && (location.x < 6))

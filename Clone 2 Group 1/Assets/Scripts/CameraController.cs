@@ -13,6 +13,11 @@ public class CameraController : MonoBehaviour
     [Header("Camera Follow Settings")]
     [SerializeField] private float maxZDistance = -5f;
 
+    [SerializeField] private float startupFollowTime = 2f;
+
+    private float startupTimer = 0f;
+    private bool startupFollowing = false;
+
     [Header("References")]
     [SerializeField] private PlayerDeathManager deathManager;
     [SerializeField] private GameManager gameManager;
@@ -70,6 +75,38 @@ public class CameraController : MonoBehaviour
 
     private void UpdateGameplayCamera()
     {
+        // Follow the player during the initial startup period
+        if (startupFollowing)
+        {
+            startupTimer += Time.deltaTime;
+
+            // Calculate target camera position based on player
+            Vector3 starttargetPos = new Vector3(
+                playerTarget.position.x + cameraOffset.x,
+                cameraOffset.y,
+                playerTarget.position.z + cameraOffset.z
+            );
+
+            // Move camera smoothly
+            transform.position = Vector3.Lerp(
+                transform.position,
+                starttargetPos,
+                Time.deltaTime * 8f
+            );
+
+            // Keep fixed rotation
+            transform.rotation = fixedRotation;
+
+            // Stop startup following after the set amount of time
+            if (startupTimer >= startupFollowTime)
+            {
+                startupFollowing = false;
+                currentZ = transform.position.z;
+            }
+
+            return;
+        }
+
         // ALWAYS move camera forward
         currentZ += forwardSpeed * Time.deltaTime;
 
@@ -133,6 +170,8 @@ public class CameraController : MonoBehaviour
     public void StartGameplayCamera()
     {
         isGameStarted = true;
+        startupFollowing = true;
+        startupTimer = 0f;
 
         if (playerTarget != null)
         {

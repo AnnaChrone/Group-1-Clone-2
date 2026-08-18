@@ -12,37 +12,158 @@ public class PlayerDeathManager : MonoBehaviour
     [Header("References")]
     [SerializeField] private GameManager gameManager;
     [SerializeField] private Transform playerCharacter;
-    [SerializeField] private string deathLayerName = "Obstacle"; // Layer for obstacles that kill player
+    [SerializeField] private string deathLayerName = "Obstacle";
+    [SerializeField] private string waterLayerName = "Water";
+
+    [Header("Death Effects")]
+    [SerializeField] private float sinkSpeed = 2f;
+    [SerializeField] private float sinkDuration = 1f;
 
     private bool isDead = false;
-    private Vector3 deathPosition;
+    private bool isSinking = false;
+    private bool isOnRidable = false;
 
     private void Start()
     {
         gameOverPanel.SetActive(false);
         isDead = false;
+        isSinking = false;
+        isOnRidable = false;
+    }
+
+    private void Update()
+    {
+        if (isDead || isSinking)
+            return;
+
+        if (gameManager != null && gameManager.IsGameActive())
+        {
+            CheckOutOfView();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isDead) return;
+        if (isDead || isSinking) return;
 
-        // Check if the player collided with something on the Obstacle layer
+        if (other.GetComponent<Ridable>() != null)
+        {
+            isOnRidable = true;
+            return;
+        }
         if (other.gameObject.layer == LayerMask.NameToLayer(deathLayerName))
         {
             Die();
+        }
+
+        if (other.gameObject.layer == LayerMask.NameToLayer(waterLayerName) && !isOnRidable)
+        {
+            StartCoroutine(SinkAndDie());
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<Ridable>() != null)
+        {
+            StartCoroutine(DelayedRidableCheck());
+        }
+    }
+
+    private IEnumerator DelayedRidableCheck()
+    {
+        yield return null; 
+
+        isOnRidable = false;
+        Collider[] colliders = Physics.OverlapSphere(playerCharacter.position, 0.5f);
+        foreach (Collider col in colliders)
+        {
+            if (col.GetComponent<Ridable>() != null)
+            {
+                isOnRidable = true;
+                break;
+            }
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (isDead) return;
+        if (isDead || isSinking) return;
 
-        // Check if the player collided with something on the Obstacle layer
+        if (collision.gameObject.GetComponent<Ridable>() != null)
+        {
+            isOnRidable = true;
+            return;
+        }
+
         if (collision.gameObject.layer == LayerMask.NameToLayer(deathLayerName))
         {
             Die();
         }
+
+        if (collision.gameObject.layer == LayerMask.NameToLayer(waterLayerName) && !isOnRidable)
+        {
+            StartCoroutine(SinkAndDie());
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        if (collision.gameObject.GetComponent<Ridable>() != null)
+        {
+            StartCoroutine(DelayedRidableCheck());
+        }
+    }
+
+    private void CheckOutOfView()
+    {
+        if (playerCharacter == null)
+            return;
+
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null)
+        {
+            Vector3 viewportPos = mainCamera.WorldToViewportPoint(playerCharacter.position);
+
+            // Kill immediately if player is not in view
+            if (viewportPos.z < 0 ||
+                viewportPos.y < -0.1f ||
+                viewportPos.y > 1.1f ||
+                viewportPos.x < -0.1f ||
+                viewportPos.x > 1.1f)
+            {
+                Die();
+            }
+        }
+    }
+
+    private IEnumerator SinkAndDie()
+    {
+        if (isDead || isSinking) yield break;
+
+        isSinking = true;
+        gameManager.SetGameActive(false);
+
+        float elapsedTime = 0f;
+        Vector3 startPos = playerCharacter.position;
+        Quaternion startRot = playerCharacter.rotation;
+
+        // Sink the player
+        while (elapsedTime < sinkDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float progress = elapsedTime / sinkDuration;
+
+            // Move down
+            playerCharacter.position = new Vector3(startPos.x, startPos.y - progress * 2f, startPos.z);
+
+            playerCharacter.rotation = Quaternion.Euler( progress * 30f, startRot.eulerAngles.y, 0);
+
+            yield return null;
+        }
+        playerCharacter.gameObject.SetActive(false);
+        isSinking = false;
+        Die();
     }
 
     private void Die()
@@ -50,21 +171,24 @@ public class PlayerDeathManager : MonoBehaviour
         if (isDead) return;
 
         isDead = true;
-        deathPosition = playerCharacter.position;
-
-        playerCharacter.gameObject.SetActive(false);
-
         gameManager.SetGameActive(false);
+
+        if (playerCharacter.gameObject.activeSelf)
+        {
+            playerCharacter.gameObject.SetActive(false);
+        }
 
         ShowGameOver();
     }
+
     public void TriggerDeath()
     {
-        if (!isDead)
+        if (!isDead && !isSinking)
         {
             Die();
         }
     }
+
     private void ShowGameOver()
     {
         gameOverPanel.SetActive(true);
@@ -72,7 +196,7 @@ public class PlayerDeathManager : MonoBehaviour
 
     public void RestartGame()
     {
-       SceneManager.LoadScene(0);
+        SceneManager.LoadScene(0);
     }
 
     public void Quit()

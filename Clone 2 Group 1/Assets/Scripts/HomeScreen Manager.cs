@@ -4,12 +4,12 @@ using UnityEngine.UI;
 
 public class HomeScreenManager : MonoBehaviour
 {
-
     [Header("UI References")]
     [SerializeField] private GameObject homeScreenPanel;
 
     [Header("References")]
     [SerializeField] private GameManager gameManager;
+    [SerializeField] private CameraController cameraController;
 
     private bool gameStarted = false;
 
@@ -17,6 +17,12 @@ public class HomeScreenManager : MonoBehaviour
     {
         homeScreenPanel.SetActive(true);
         gameManager.SetGameActive(false);
+
+        // Setup camera for home screen
+        if (cameraController != null)
+        {
+            cameraController.SetupHomeScreenView();
+        }
     }
 
     private void Update()
@@ -31,6 +37,7 @@ public class HomeScreenManager : MonoBehaviour
     {
         return Keyboard.current.anyKey.wasPressedThisFrame;
     }
+
     private void StartGame()
     {
         gameStarted = true;
@@ -38,4 +45,3 @@ public class HomeScreenManager : MonoBehaviour
         gameManager.StartGameLevel();
     }
 }
-

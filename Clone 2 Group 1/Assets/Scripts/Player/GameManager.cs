@@ -19,6 +19,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Train trainPrefab;
     [SerializeField] private Log LogPrefab;
 
+    [Header("Camera Settings")]
+    [SerializeField] private CameraController cameraController;
 
     [Header("Game Parameters")]
     [SerializeField] private int spawnDistance = 20;
@@ -71,6 +73,12 @@ public class GameManager : MonoBehaviour
     {
         NewLevel();
         SetGameActive(true);
+
+        // Start gameplay camera
+        if (cameraController != null)
+        {
+            cameraController.StartGameplayCamera();
+        }
     }
     private bool InStartArea(Vector2Int location)
     {
@@ -122,20 +130,11 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        
 
         while (obstacles.Count < (characterPos.y + spawnDistance))
-            {
+        {
             SpawnObstacle();
         }
-        
-        //Camera
-        Vector3 cameraPosition = new(character.position.x + 2, 4, character.position.z - 3);
-        
-        cameraPosition.x = Mathf.Clamp(cameraPosition.x, -1, 5);
-        
-        Camera.main.transform.position = cameraPosition;
-
     }
     private void NewLevel()
     {
@@ -144,15 +143,21 @@ public class GameManager : MonoBehaviour
         characterPos = new Vector2Int(0, -1);
         character.position = new Vector3(0, 0.2f, -1);
 
+        playerPos = new Vector2Int(0, -1);
 
-        playerPos = new Vector2Int(0,-1);
-        //Reset Terrain
+        // Reset Terrain
         obstacles.Clear();
         chunkQueue.Clear();
         ResetConsecutiveCounters();
         foreach (Transform child in terrainHolder)
         {
             Destroy(child.gameObject);
+        }
+
+        // Reset camera
+        if (cameraController != null)
+        {
+            cameraController.ResetCameraPosition();
         }
 
         spawnLocation = 0;
@@ -162,6 +167,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // Add this method
+    public bool IsGameActive()
+    {
+        return gameState != GameState.Dead && gameState != GameState.Ready;
+    }
+
+    
     //PROCEDURAL GENERATION FUNCTIONS
     private void ResetConsecutiveCounters()
     {
@@ -447,7 +459,7 @@ public class GameManager : MonoBehaviour
 
 
 
-    private IEnumerator MoveCharacter()//new
+    private IEnumerator MoveCharacter()
     {
         gameState = GameState.Moving;
         float elapsedTime = 0f;

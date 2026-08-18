@@ -111,7 +111,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &848931656810304228
 Transform:
   m_ObjectHideFlags: 0
@@ -197,7 +197,7 @@ GameObject:
   - component: {fileID: 3759998409511304825}
   - component: {fileID: 5408967546725642976}
   m_Layer: 6
-  m_Name: Car
+  m_Name: car
   m_TagString: Hazard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

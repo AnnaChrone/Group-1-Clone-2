@@ -76,6 +76,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -2651521476982799978, guid: 06727b9bfc1c59f4b94d0dcab95aae7d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 06727b9bfc1c59f4b94d0dcab95aae7d, type: 3}
       propertyPath: m_Name
       value: log
@@ -157,8 +161,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.4261727, y: 0.38919452, z: 0.70132416}
-  m_Center: {x: 0.03764844, y: -0.14090051, z: -0.020938486}
+  m_Size: {x: 3.2204618, y: 0.38919452, z: 0.70132416}
+  m_Center: {x: 0.434793, y: -0.14090051, z: -0.020938486}
 --- !u!54 &1502163942737549582
 Rigidbody:
   m_ObjectHideFlags: 0

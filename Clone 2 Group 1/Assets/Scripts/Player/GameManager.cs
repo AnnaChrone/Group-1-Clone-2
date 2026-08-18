@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,6 +26,10 @@ public class GameManager : MonoBehaviour
     [Header("Game Parameters")]
     [SerializeField] private int spawnDistance = 20;
     [SerializeField] private float moveDuration = 0.2f;
+
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI distanceText;
+    private int totalDistance = 0; // Track forward distance
 
     private Vector2Int playerPos;
     private int spawnLocation;
@@ -96,25 +101,35 @@ public class GameManager : MonoBehaviour
         if (gameState == GameState.Ready)
         {
             Vector2Int moveDirection = Vector2Int.zero;
+            bool moved = false;
+
             if (Keyboard.current.wKey.wasPressedThisFrame)
             {
                 character.localRotation = Quaternion.identity;
                 moveDirection.y = 1;
+                moved = true;
+
             }
             else if (Keyboard.current.sKey.wasPressedThisFrame)
             {
                 character.localRotation = Quaternion.Euler(0, 180, 0);
                 moveDirection.y = -1;
+                moved = true;
+
             }
             else if (Keyboard.current.aKey.wasPressedThisFrame)
             {
                 character.localRotation = Quaternion.Euler(0, -90, 0);
                 moveDirection.x = -1;
+                moved = true;
+
             }
             else if (Keyboard.current.dKey.wasPressedThisFrame)
             {
                 character.localRotation = Quaternion.Euler(0, 90, 0);
                 moveDirection.x = 1;
+                moved = true;
+
             }
 
             if (moveDirection != Vector2Int.zero)
@@ -122,8 +137,25 @@ public class GameManager : MonoBehaviour
                 Vector2Int destination = characterPos + moveDirection;
                 if (InStartArea(destination) || ((destination.y >= 0) && !obstacles[destination.y].locations.Contains(destination.x)))
                 {
+
+                    int oldY = characterPos.y;
+                    int newY = destination.y;
+
                     characterPos = destination;
                     StartCoroutine(MoveCharacter());
+
+                    if (newY > oldY)
+                    {
+                        totalDistance += (newY - oldY);
+                    }
+                    else if (newY < oldY)
+                    {
+                        totalDistance -= (oldY - newY);
+                        // Optional: Prevent negative distance
+                        // if (totalDistance < 0) totalDistance = 0;
+                    }
+
+                    UpdateDistanceDisplay();
 
                     // Check if the new position is dangerous
                     CheckForDeathAtPosition(destination);
@@ -136,6 +168,15 @@ public class GameManager : MonoBehaviour
             SpawnObstacle();
         }
     }
+
+    private void UpdateDistanceDisplay()
+    {
+        if (distanceText != null)
+        {
+
+            distanceText.text = $"{totalDistance}";
+        }
+    }
     private void NewLevel()
     {
         gameState = GameState.Ready;
@@ -144,6 +185,9 @@ public class GameManager : MonoBehaviour
         character.position = new Vector3(0, 0.2f, -1);
 
         playerPos = new Vector2Int(0, -1);
+
+        totalDistance = 0;
+        UpdateDistanceDisplay();
 
         // Reset Terrain
         obstacles.Clear();
@@ -167,7 +211,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Add this method
     public bool IsGameActive()
     {
         return gameState != GameState.Dead && gameState != GameState.Ready;
@@ -521,5 +564,17 @@ public class GameManager : MonoBehaviour
     private void CheckForDeathAtPosition(Vector2Int position)
     {
         //PlayerDeathHandler handle collisions
+    }
+
+    public void ExitToDesktop()
+    {
+        Debug.Log("Game is exiting...");
+
+        Application.Quit();
+
+        // If you're in the editor this will run
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }
